@@ -81,7 +81,7 @@
             border-radius: 20px;
             font-size: 12px;
             cursor: pointer;
-            margin-bottom: 20px;
+            margin-bottom: 10px; /* Reduced margin */
             transition: background 0.3s;
         }
         .toggle-video-btn:hover { background: rgba(255, 255, 255, 0.3); }
@@ -91,7 +91,7 @@
             position: relative;
             width: 220px;
             height: 220px;
-            margin: 0 auto 40px auto;
+            margin: 0 auto 25px auto; /* Reduced bottom margin */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -121,8 +121,38 @@
             background-color: #000;
         }
 
+        /* NEW: TRACK INFO (Title & Artist) */
+        .track-info {
+            margin-bottom: 25px;
+            height: 45px; /* Fixed height to prevent jumping */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .track-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .track-artist {
+            font-size: 12px;
+            color: #b3b3b3;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 280px;
+            margin: 4px auto 0 auto;
+        }
+
         /* YOUTUBE PLAYER STYLES */
-        /* Default: Hidden off-screen */
         #player {
             position: absolute;
             top: -2000px; 
@@ -134,12 +164,10 @@
             transition: opacity 0.3s;
         }
 
-        /* When 'show-video' is active, move player on top of album art */
         .visualizer-container.show-video #player {
-            top: 10px; /* Center it roughly over the 220px container */
+            top: 10px; 
             left: 10px;
             opacity: 1;
-            /* Allow clicking to skip ads */
             pointer-events: auto; 
         }
 
@@ -227,8 +255,12 @@
         <div class="visualizer-container" id="visualizer">
             <div class="glow-ring"></div>
             <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000" class="album-art" id="current-thumb">
-            
             <div id="player"></div>
+        </div>
+
+        <div class="track-info">
+            <div class="track-title" id="track-title">Waiting for music...</div>
+            <div class="track-artist" id="track-artist">Artist Name</div>
         </div>
 
         <div class="controls">
@@ -251,7 +283,7 @@
             vizContainer.classList.toggle('show-video');
         }
 
-        // --- VISUALIZER LOGIC ---
+        // --- VISUALIZER & METADATA LOGIC ---
         function updateVisualizerState(isPlaying) {
             const viz = document.getElementById('visualizer');
             if (isPlaying) {
@@ -261,9 +293,18 @@
             }
         }
 
-        function updateThumbnail() {
+        // This function fetches the Title and Thumbnail
+        function updateTrackInfo() {
             try {
                 const videoData = player.getVideoData();
+                
+                // 1. Update Title and Artist
+                if (videoData && videoData.title) {
+                    document.getElementById('track-title').innerText = videoData.title;
+                    document.getElementById('track-artist').innerText = videoData.author; // "author" is usually the channel name
+                }
+
+                // 2. Update Thumbnail
                 const videoId = videoData.video_id;
                 if (videoId) {
                     const imgUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
@@ -283,7 +324,7 @@
                 width: '200',
                 playerVars: {
                     'playsinline': 1,
-                    'controls': 1, // Show controls so they can click Skip
+                    'controls': 1,
                     'modestbranding': 1
                 },
                 events: {
@@ -301,7 +342,7 @@
                 status.innerText = "Now Playing";
                 icon.innerHTML = "&#10074;&#10074;";
                 updateVisualizerState(true);
-                updateThumbnail();
+                updateTrackInfo(); // Fetch title/art immediately
             } else if (event.data == YT.PlayerState.PAUSED) {
                 status.innerText = "Paused";
                 icon.innerHTML = "&#9658;";
