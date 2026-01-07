@@ -24,21 +24,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden; /* Prevent body scroll */
+            overflow: hidden; 
         }
 
-        /* --- THE GRID LAYOUT --- */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 1fr 320px; /* Left takes space, Right is fixed width */
-            grid-template-rows: auto 1fr; /* Right side split */
+            grid-template-columns: 1fr 320px; 
+            grid-template-rows: auto 1fr;
             gap: 20px;
             width: 90%;
             max-width: 1000px;
             height: 80vh;
         }
 
-        /* GLASS PANELS SHARED STYLE */
         .glass-panel {
             background: var(--glass-surface);
             backdrop-filter: blur(20px);
@@ -51,220 +49,66 @@
             flex-direction: column;
         }
 
-        /* --- LEFT PANEL: PLAYER --- */
-        .left-panel {
-            grid-column: 1;
-            grid-row: 1 / span 2; /* Takes up full height on left */
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
+        .left-panel { grid-column: 1; grid-row: 1 / span 2; align-items: center; justify-content: center; position: relative; }
+        .right-top { grid-column: 2; grid-row: 1; height: fit-content; }
+        .right-bottom { grid-column: 2; grid-row: 2; overflow: hidden; min-height: 200px; }
 
-        /* --- RIGHT PANEL TOP: INPUTS --- */
-        .right-top {
-            grid-column: 2;
-            grid-row: 1;
-            height: fit-content;
-        }
-
-        /* --- RIGHT PANEL BOTTOM: QUEUE --- */
-        .right-bottom {
-            grid-column: 2;
-            grid-row: 2;
-            overflow: hidden; /* Keeps list inside */
-            min-height: 200px;
-        }
-
-        /* --- RESPONSIVE MOBILE (Stack them) --- */
         @media (max-width: 850px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto auto;
-                height: auto;
-                overflow-y: auto;
-                padding: 20px 0;
-            }
+            .dashboard-grid { grid-template-columns: 1fr; grid-template-rows: auto auto auto; height: auto; overflow-y: auto; padding: 20px 0; }
             .left-panel { grid-column: 1; grid-row: 2; }
             .right-top { grid-column: 1; grid-row: 1; }
             .right-bottom { grid-column: 1; grid-row: 3; height: 300px;}
             body { overflow-y: auto; display: block; }
         }
 
-        /* --- UI ELEMENTS --- */
-        
-        /* Inputs & Buttons */
-        .input-group {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        
-        input, select {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--glass-border);
-            color: #ddd;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 13px;
-            outline: none;
-            width: 100%;
-            box-sizing: border-box;
-        }
+        /* Inputs */
+        .input-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        input, select { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #ddd; padding: 12px; border-radius: 12px; font-size: 13px; outline: none; width: 100%; box-sizing: border-box; }
         input:focus, select:focus { border-color: var(--accent); }
 
-        .btn {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 12px;
-            font-weight: 600;
-        }
+        .btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 10px; border-radius: 10px; cursor: pointer; transition: background 0.2s; font-size: 12px; font-weight: 600; }
         .btn:hover { background: rgba(255,255,255,0.25); }
         .btn-play-go { background: var(--accent); color: #000; }
         .btn-play-go:hover { background: #33ffff; }
 
-        /* --- QUEUE LIST (Bottom Right) --- */
-        .queue-header {
-            font-size: 14px;
-            font-weight: 700;
-            color: #888;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .queue-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            overflow-y: auto; /* Scrollable */
-            height: 100%;
-            padding-right: 5px;
-        }
-        
-        /* Custom Scrollbar */
+        /* Queue List */
+        .queue-header { font-size: 14px; font-weight: 700; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .queue-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; height: 100%; padding-right: 5px; }
         .queue-list::-webkit-scrollbar { width: 5px; }
         .queue-list::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
 
-        .queue-item {
-            padding: 12px;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.03);
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #aaa;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-        }
+        .queue-item { padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.03); margin-bottom: 8px; font-size: 13px; color: #aaa; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
         .queue-item:hover { background: rgba(255,255,255,0.1); color: white; }
         
-        .queue-item.active {
-            background: rgba(0, 221, 255, 0.15);
-            color: var(--accent);
-            border: 1px solid rgba(0, 221, 255, 0.3);
-            font-weight: bold;
-        }
+        .queue-item.active { background: rgba(0, 221, 255, 0.15); color: var(--accent); border: 1px solid rgba(0, 221, 255, 0.3); font-weight: bold; }
 
-        /* --- PLAYER VISUALS (Left Panel) --- */
-        .visualizer-container {
-            position: relative;
-            width: 260px;
-            height: 260px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .glow-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: var(--primary-glow);
-            background-size: 400%;
-            border-radius: 50px;
-            filter: blur(25px);
-            opacity: 0.3;
-            transition: opacity 0.5s ease;
-            z-index: 1;
-        }
-
-        .album-art {
-            width: 240px;
-            height: 240px;
-            object-fit: cover;
-            border-radius: 40px;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            background-color: #000;
-        }
-
-        /* Track Info */
+        /* Visualizer */
+        .visualizer-container { position: relative; width: 260px; height: 260px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; }
+        .glow-ring { position: absolute; width: 100%; height: 100%; background: var(--primary-glow); background-size: 400%; border-radius: 50px; filter: blur(25px); opacity: 0.3; transition: opacity 0.5s ease; z-index: 1; }
+        .album-art { width: 240px; height: 240px; object-fit: cover; border-radius: 40px; position: relative; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background-color: #000; }
+        
         .track-info { margin-bottom: 30px; text-align: center; width: 100%; }
         .track-title { font-size: 20px; font-weight: 800; color: white; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; margin: 0 auto;}
         .track-artist { font-size: 14px; color: var(--accent); font-weight: 600; }
 
-        /* Controls */
         .controls { display: flex; gap: 40px; align-items: center; margin-bottom: 20px; }
         .ctrl-btn { background: none; border: none; color: #888; cursor: pointer; transition: color 0.2s; padding: 0; }
         .ctrl-btn:hover { color: white; transform: scale(1.1); }
         .ctrl-btn svg { width: 30px; height: 30px; }
         
-        .play-btn {
-            background: white;
-            color: black;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 0 30px rgba(255,255,255,0.3);
-            transition: transform 0.2s;
-        }
+        .play-btn { background: white; color: black; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; box-shadow: 0 0 30px rgba(255,255,255,0.3); transition: transform 0.2s; }
         .play-btn:hover { transform: scale(1.1); }
-        .play-btn div { font-size: 30px; margin-left: 4px; } /* Play icon offset */
+        .play-btn div { font-size: 30px; margin-left: 4px; } 
 
-        /* Hidden Player logic */
-        #player {
-            position: absolute;
-            top: -2000px;
-            left: 0;
-            width: 240px;
-            height: 240px;
-            border-radius: 40px;
-            z-index: 10;
-        }
+        #player { position: absolute; top: -2000px; left: 0; width: 240px; height: 240px; border-radius: 40px; z-index: 10; }
         .visualizer-container.show-video #player { top: 10px; left: 10px; pointer-events: auto; }
 
-        /* Animation Classes */
         .is-playing .glow-ring { opacity: 0.8; animation: glowing 3s linear infinite; }
         .is-playing .album-art { animation: thump 0.8s ease-in-out infinite alternate; }
-
         @keyframes glowing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes thump { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
 
-        .toggle-video-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 10px;
-            padding: 5px 10px;
-            background: rgba(255,255,255,0.1);
-            color: #aaa;
-            border-radius: 15px;
-            border:none;
-            cursor:pointer;
-        }
+        .toggle-video-btn { position: absolute; top: 20px; right: 20px; font-size: 10px; padding: 5px 10px; background: rgba(255,255,255,0.1); color: #aaa; border-radius: 15px; border:none; cursor:pointer; }
         .toggle-video-btn:hover { background:white; color:black; }
 
     </style>
@@ -272,7 +116,6 @@
 <body>
 
     <div class="dashboard-grid">
-        
         <div class="glass-panel left-panel">
             <button class="toggle-video-btn" onclick="toggleVideoVisibility()">Show/Hide Video (Ads)</button>
 
@@ -298,16 +141,13 @@
 
         <div class="glass-panel right-top">
             <div style="font-size:12px; font-weight:700; color:#aaa; margin-bottom:10px;">ADD / PICK</div>
-            
             <div class="input-group">
                 <input type="text" id="url-input" placeholder="Paste YouTube Playlist Link...">
                 <button class="btn btn-play-go" style="width: auto;" onclick="loadFromInput()">GO</button>
             </div>
-
             <select id="saved-library" onchange="loadFromLibrary()">
                 <option value="" disabled selected>📂 Saved Playlists</option>
             </select>
-
             <div style="display:flex; gap:10px; margin-top:10px;">
                 <button class="btn" style="width:100%" onclick="saveCurrentPlaylist()">Save This</button>
                 <button class="btn" style="width:100%" onclick="clearLibrary()">Reset All</button>
@@ -320,16 +160,16 @@
                 <li class="queue-item">No playlist loaded</li>
             </ul>
         </div>
-
     </div>
 
     <script>
         var player;
         var currentPlaylistId = ""; 
+        var knownTitles = {}; // THIS IS NEW: Stores the titles we find!
 
         // --- QUEUE LOGIC ---
         function updateQueueList() {
-            // Get list of Video IDs
+            if(!player) return;
             var playlist = player.getPlaylist();
             var currentIndex = player.getPlaylistIndex();
             var container = document.getElementById('queue-container');
@@ -339,31 +179,28 @@
                 return;
             }
 
-            container.innerHTML = ""; // Clear list
+            container.innerHTML = "";
 
-            // Create a list item for each track
             playlist.forEach((id, index) => {
                 let li = document.createElement('li');
                 li.className = 'queue-item';
                 
-                // If this is the playing song, highlight it
+                // CHECK: Do we know the title yet?
+                let displayTitle = knownTitles[index] || `Track ${index + 1}`; 
+
+                // Is this the currently playing one?
                 if (index === currentIndex) {
                     li.classList.add('active');
-                    li.innerHTML = `<span>Now Playing (Track ${index + 1})</span> <span>🔊</span>`;
+                    li.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85%;">${displayTitle}</span> <span>🔊</span>`;
                 } else {
-                    li.innerHTML = `<span>Track ${index + 1}</span>`;
+                    li.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayTitle}</span>`;
                 }
 
-                // Make it clickable to skip to that song
-                li.onclick = function() {
-                    player.playVideoAt(index);
-                };
-
+                li.onclick = function() { player.playVideoAt(index); };
                 container.appendChild(li);
             });
         }
 
-        // --- PLAYER LOGIC ---
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '100%',
@@ -382,32 +219,42 @@
                 status.innerText = "STREAMING";
                 icon.innerHTML = "&#10074;&#10074;";
                 document.getElementById('visualizer').classList.add('is-playing');
+                
+                // IMPORTANT: Fetch metadata and save it to our knownTitles list
                 updateTrackInfo();
-                updateQueueList(); // Update queue highlight
+                
             } else if (event.data == YT.PlayerState.PAUSED) {
                 status.innerText = "PAUSED";
                 icon.innerHTML = "&#9658;";
                 document.getElementById('visualizer').classList.remove('is-playing');
             } else if (event.data == YT.PlayerState.UNSTARTED) {
-                 updateQueueList(); // Load queue when playlist loads
+                 knownTitles = {}; // Reset titles when loading new playlist
+                 updateQueueList();
             }
         }
 
         function updateTrackInfo() {
             try {
                 const videoData = player.getVideoData();
+                const currentIndex = player.getPlaylistIndex();
+
                 if (videoData) {
+                    // 1. Update the Main Display
                     document.getElementById('track-title').innerText = videoData.title;
                     document.getElementById('track-artist').innerText = videoData.author;
                     
+                    // 2. Update Thumbnail
                     const videoId = videoData.video_id;
                     const imgUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
                     const img = document.getElementById('current-thumb');
-                    // Image fallback checker
                     const tester = new Image();
                     tester.onload = function() { img.src = imgUrl; };
                     tester.onerror = function() { img.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; };
                     tester.src = imgUrl;
+
+                    // 3. RECORD THE TITLE for the list
+                    knownTitles[currentIndex] = videoData.title;
+                    updateQueueList(); // Refresh the list with the new name
                 }
             } catch(e) {}
         }
@@ -430,6 +277,7 @@
             const match = url.match(reg);
             if (match && match[1]) {
                 currentPlaylistId = match[1];
+                knownTitles = {}; // Clear old titles
                 player.loadPlaylist({list:match[1], listType:'playlist'});
             } else { alert("Invalid Playlist URL"); }
         }
@@ -438,6 +286,7 @@
             const id = document.getElementById('saved-library').value;
             if (id) {
                 currentPlaylistId = id;
+                knownTitles = {}; // Clear old titles
                 player.loadPlaylist({list:id, listType:'playlist'});
             }
         }
@@ -469,7 +318,6 @@
             if(confirm("Delete all?")) { localStorage.removeItem('myMusicLibrary'); populateLibrary(); }
         }
 
-        // Inject YouTube API
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
