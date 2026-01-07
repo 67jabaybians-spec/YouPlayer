@@ -26,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* The Glass Card */
         .player-card {
             background: var(--glass-surface);
             backdrop-filter: blur(20px);
@@ -41,9 +40,9 @@
             z-index: 2;
         }
 
-        /* Input Controls (Top) */
+        /* Top Inputs */
         .top-controls {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -58,7 +57,7 @@
             font-size: 13px;
             outline: none;
             width: 100%;
-            box-sizing: border-box; /* Fix padding issues */
+            box-sizing: border-box; 
         }
         
         .btn-small {
@@ -73,7 +72,21 @@
         }
         .btn-small:hover { background: rgba(255,255,255,0.2); color: white; }
 
-        /* THE VISUALIZER & ALBUM ART */
+        /* TOGGLE VIDEO BUTTON */
+        .toggle-video-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid var(--glass-border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+        .toggle-video-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* VISUALIZER CONTAINER */
         .visualizer-container {
             position: relative;
             width: 220px;
@@ -84,21 +97,19 @@
             justify-content: center;
         }
 
-        /* The Colorful Glow Behind */
         .glow-ring {
             position: absolute;
             width: 100%;
             height: 100%;
             background: var(--primary-glow);
             background-size: 400%;
-            border-radius: 40px; /* Squircle shape */
+            border-radius: 40px;
             filter: blur(20px);
             opacity: 0.3;
             transition: opacity 0.5s ease;
             z-index: 1;
         }
 
-        /* The Album Art Image */
         .album-art {
             width: 200px;
             height: 200px;
@@ -107,8 +118,29 @@
             position: relative;
             z-index: 2;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             background-color: #000;
+        }
+
+        /* YOUTUBE PLAYER STYLES */
+        /* Default: Hidden off-screen */
+        #player {
+            position: absolute;
+            top: -2000px; 
+            left: 0;
+            width: 200px;
+            height: 200px;
+            border-radius: 35px;
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+
+        /* When 'show-video' is active, move player on top of album art */
+        .visualizer-container.show-video #player {
+            top: 10px; /* Center it roughly over the 220px container */
+            left: 10px;
+            opacity: 1;
+            /* Allow clicking to skip ads */
+            pointer-events: auto; 
         }
 
         /* Animation States */
@@ -118,7 +150,6 @@
         }
         
         .is-playing .album-art {
-            transform: scale(1.05);
             animation: thump 0.8s ease-in-out infinite alternate;
         }
 
@@ -133,7 +164,7 @@
             100% { transform: scale(1.03); }
         }
 
-        /* Playback Controls */
+        /* Controls */
         .controls {
             display: flex;
             justify-content: center;
@@ -147,7 +178,6 @@
             color: #888;
             font-size: 24px;
             cursor: pointer;
-            transition: color 0.2s;
         }
         button.ctrl-btn:hover { color: white; }
 
@@ -164,7 +194,6 @@
             border: none;
             cursor: pointer;
             box-shadow: 0 0 20px rgba(255,255,255,0.2);
-            transition: transform 0.2s;
         }
         .play-btn:hover { transform: scale(1.1); }
 
@@ -175,16 +204,6 @@
             font-weight: 600;
             letter-spacing: 1px;
             text-transform: uppercase;
-        }
-
-        /* HIDE THE REAL PLAYER (But keep it technically there for audio) */
-        #player {
-            position: absolute;
-            top: -1000px;
-            left: -1000px;
-            width: 1px;
-            height: 1px;
-            opacity: 0;
         }
     </style>
 </head>
@@ -197,44 +216,42 @@
                 <input type="text" id="url-input" placeholder="Paste YouTube Playlist Link...">
                 <button class="btn-small" style="width: auto;" onclick="loadFromInput()">GO</button>
             </div>
-            
             <select id="saved-library" onchange="loadFromLibrary()">
                 <option value="" disabled selected>📂 Saved Playlists</option>
             </select>
-
             <button class="btn-small" onclick="saveCurrentPlaylist()">+ Save to Library</button>
         </div>
 
+        <button class="toggle-video-btn" onclick="toggleVideoVisibility()">📺 Video / Skip Ad</button>
+
         <div class="visualizer-container" id="visualizer">
             <div class="glow-ring"></div>
-            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop" class="album-art" id="current-thumb">
+            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000" class="album-art" id="current-thumb">
+            
+            <div id="player"></div>
         </div>
 
         <div class="controls">
-            <button class="ctrl-btn" onclick="prevVideo()">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-            </button>
-            
-            <button class="play-btn" onclick="togglePlay()">
-                <div id="play-icon">&#9658;</div>
-            </button>
-            
-            <button class="ctrl-btn" onclick="nextVideo()">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-            </button>
+            <button class="ctrl-btn" onclick="prevVideo()"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+            <button class="play-btn" onclick="togglePlay()"><div id="play-icon">&#9658;</div></button>
+            <button class="ctrl-btn" onclick="nextVideo()"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
         </div>
 
         <div class="status-text" id="status-text">Ready</div>
         <div style="margin-top:10px; font-size:10px; color:#444; cursor:pointer;" onclick="clearLibrary()">Reset All</div>
-
-        <div id="player"></div>
     </div>
 
     <script>
         var player;
         var currentPlaylistId = ""; 
 
-        // --- 1. VISUALIZER LOGIC ---
+        // --- TOGGLE VIDEO VISIBILITY ---
+        function toggleVideoVisibility() {
+            const vizContainer = document.getElementById('visualizer');
+            vizContainer.classList.toggle('show-video');
+        }
+
+        // --- VISUALIZER LOGIC ---
         function updateVisualizerState(isPlaying) {
             const viz = document.getElementById('visualizer');
             if (isPlaying) {
@@ -246,34 +263,28 @@
 
         function updateThumbnail() {
             try {
-                // Get current video ID from the hidden player
                 const videoData = player.getVideoData();
                 const videoId = videoData.video_id;
-                
                 if (videoId) {
-                    // Construct high-res thumbnail URL
                     const imgUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                    
-                    // Update the image source
                     const img = document.getElementById('current-thumb');
-                    
-                    // Fallback if maxres doesn't exist (prevents broken images)
                     const tester = new Image();
                     tester.onload = function() { img.src = imgUrl; };
                     tester.onerror = function() { img.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; };
                     tester.src = imgUrl;
                 }
-            } catch(e) { console.log("Could not fetch thumb"); }
+            } catch(e) {}
         }
 
-        // --- 2. YOUTUBE API ---
+        // --- YOUTUBE API ---
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '200',
                 width: '200',
                 playerVars: {
                     'playsinline': 1,
-                    'controls': 0, 
+                    'controls': 1, // Show controls so they can click Skip
+                    'modestbranding': 1
                 },
                 events: {
                     'onStateChange': onPlayerStateChange
@@ -288,22 +299,19 @@
             
             if (event.data == YT.PlayerState.PLAYING) {
                 status.innerText = "Now Playing";
-                icon.innerHTML = "&#10074;&#10074;"; // Pause icon
+                icon.innerHTML = "&#10074;&#10074;";
                 updateVisualizerState(true);
-                updateThumbnail(); // Fetch new art
+                updateThumbnail();
             } else if (event.data == YT.PlayerState.PAUSED) {
                 status.innerText = "Paused";
-                icon.innerHTML = "&#9658;"; // Play icon
+                icon.innerHTML = "&#9658;";
                 updateVisualizerState(false);
             } else if (event.data == YT.PlayerState.BUFFERING) {
                 status.innerText = "Loading...";
                 updateVisualizerState(false);
-            } else if (event.data == YT.PlayerState.ENDED) {
-                updateVisualizerState(false);
             }
         }
 
-        // --- 3. STANDARD CONTROLS (Same as before) ---
         function togglePlay() {
             var state = player.getPlayerState();
             (state == YT.PlayerState.PLAYING) ? player.pauseVideo() : player.playVideo();
@@ -311,7 +319,7 @@
         function nextVideo() { player.nextVideo(); }
         function prevVideo() { player.previousVideo(); }
 
-        // --- 4. LIBRARY & INPUTS (Same logic) ---
+        // --- LIBRARY LOGIC ---
         function getPlaylistId(url) {
             let listId = null;
             try {
