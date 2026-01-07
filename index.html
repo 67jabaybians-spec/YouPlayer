@@ -96,6 +96,7 @@
         .glow-ring { position: absolute; width: 100%; height: 100%; background: var(--primary-glow); background-size: 400%; border-radius: 55px; filter: blur(30px); opacity: 0.3; transition: opacity 0.5s ease; z-index: 1; }
         .album-art { width: 260px; height: 260px; object-fit: cover; border-radius: 45px; position: relative; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background-color: #111; transition: opacity 0.3s;}
         
+        /* LOADER (Z-Index 20) */
         .loader-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); border-radius: 45px; z-index: 20; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .visualizer-container.loading .loader-overlay { opacity: 1; pointer-events: auto; }
         .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -109,15 +110,21 @@
         .ctrl-btn:hover { color: white; transform: scale(1.1); }
         .ctrl-btn svg { width: 30px; height: 30px; }
         
-        /* Specific Shuffle Active State */
         .ctrl-btn.shuffle-active { color: var(--accent); filter: drop-shadow(0 0 5px var(--accent)); }
 
         .play-btn { background: white; color: black; width: 75px; height: 75px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; box-shadow: 0 0 30px rgba(255,255,255,0.3); transition: transform 0.2s; }
         .play-btn:hover { transform: scale(1.1); }
         .play-btn div { font-size: 30px; margin-left: 5px; } 
 
+        /* PLAYER (Normally Hidden, Z-Index 10) */
         #player { position: absolute; top: -2000px; left: 0; width: 260px; height: 260px; border-radius: 45px; z-index: 10; }
-        .visualizer-container.show-video #player { top: 10px; left: 10px; pointer-events: auto; }
+        
+        /* SHOW VIDEO (Player becomes Z-Index 30 - Above Loader) */
+        .visualizer-container.show-video #player { top: 10px; left: 10px; pointer-events: auto; z-index: 30; }
+
+        /* TOGGLE BUTTON (Z-Index 40 - Always Clickable) */
+        .toggle-video-btn { position: absolute; top: 25px; right: 25px; font-size: 11px; padding: 6px 12px; background: rgba(255,255,255,0.1); color: #aaa; border-radius: 20px; border:none; cursor:pointer; font-weight: 600; z-index: 40; }
+        .toggle-video-btn:hover { background:white; color:black; }
 
         .is-playing .glow-ring { opacity: 0.8; animation: glowing 3s linear infinite; }
         .is-playing .album-art { animation: thump 0.8s ease-in-out infinite alternate; }
@@ -125,16 +132,13 @@
         @keyframes thump { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .toggle-video-btn { position: absolute; top: 25px; right: 25px; font-size: 11px; padding: 6px 12px; background: rgba(255,255,255,0.1); color: #aaa; border-radius: 20px; border:none; cursor:pointer; font-weight: 600; }
-        .toggle-video-btn:hover { background:white; color:black; }
-
     </style>
 </head>
 <body>
 
     <div class="dashboard-grid">
         <div class="glass-panel left-panel">
-            <button class="toggle-video-btn" onclick="toggleVideoVisibility()">Show/Hide Video (Ads)</button>
+            <button class="toggle-video-btn" onclick="toggleVideoVisibility()">Show/Hide Video</button>
 
             <div class="visualizer-container" id="visualizer">
                 <div class="glow-ring"></div>
@@ -188,33 +192,23 @@
         var player;
         var currentPlaylistId = ""; 
         var knownTitles = {}; 
-        var isShuffleOn = false; // State for shuffle
+        var isShuffleOn = false;
 
-        // --- SHUFFLE LOGIC ---
         function toggleShuffle() {
             isShuffleOn = !isShuffleOn;
             const btn = document.getElementById('shuffle-btn');
-            if(isShuffleOn) {
-                btn.classList.add('shuffle-active');
-            } else {
-                btn.classList.remove('shuffle-active');
-            }
+            (isShuffleOn) ? btn.classList.add('shuffle-active') : btn.classList.remove('shuffle-active');
         }
 
         function playRandomVideo() {
             if(!player) return;
-            // Get total songs
             const playlist = player.getPlaylist();
             if(!playlist) return;
-            
-            // Generate random index
             const randomIndex = Math.floor(Math.random() * playlist.length);
-            
             setLoading(true);
             player.playVideoAt(randomIndex);
         }
 
-        // --- LOADING STATE ---
         function setLoading(isLoading) {
             const viz = document.getElementById('visualizer');
             const title = document.getElementById('track-title');
@@ -222,185 +216,9 @@
 
             if (isLoading) {
                 viz.classList.add('loading');
-                title.innerText = "Fetching Playlist...";
+                title.innerText = "Fetching...";
                 artist.innerText = "Please wait";
                 document.getElementById('queue-container').style.opacity = "0.5";
             } else {
                 viz.classList.remove('loading');
-                document.getElementById('queue-container').style.opacity = "1";
-            }
-        }
-
-        function updateQueueList() {
-            if(!player) return;
-            var playlist = player.getPlaylist();
-            var currentIndex = player.getPlaylistIndex();
-            var container = document.getElementById('queue-container');
-
-            if (!playlist || playlist.length === 0) {
-                container.innerHTML = '<li class="queue-item">No tracks found</li>';
-                return;
-            }
-
-            container.innerHTML = "";
-
-            playlist.forEach((id, index) => {
-                let li = document.createElement('li');
-                li.className = 'queue-item';
-                let displayTitle = knownTitles[index] || `Track ${index + 1}`; 
-
-                if (index === currentIndex) {
-                    li.classList.add('active');
-                    li.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85%;">${displayTitle}</span> <span>🔊</span>`;
-                } else {
-                    li.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayTitle}</span>`;
-                }
-
-                li.onclick = function() { 
-                    setLoading(true); 
-                    player.playVideoAt(index); 
-                };
-                container.appendChild(li);
-            });
-        }
-
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
-                playerVars: { 'playsinline': 1, 'controls': 1, 'modestbranding': 1 },
-                events: { 'onStateChange': onPlayerStateChange }
-            });
-            populateLibrary();
-        }
-
-        function onPlayerStateChange(event) {
-            const status = document.getElementById('status-text');
-            const icon = document.getElementById('play-icon');
-            
-            if (event.data == YT.PlayerState.PLAYING) {
-                setLoading(false);
-                status.innerText = "STREAMING";
-                icon.innerHTML = "&#10074;&#10074;";
-                document.getElementById('visualizer').classList.add('is-playing');
-                updateTrackInfo();
-                
-            } else if (event.data == YT.PlayerState.BUFFERING) {
-                setLoading(true);
-                status.innerText = "BUFFERING...";
-            } else if (event.data == YT.PlayerState.PAUSED) {
-                setLoading(false);
-                status.innerText = "PAUSED";
-                icon.innerHTML = "&#9658;";
-                document.getElementById('visualizer').classList.remove('is-playing');
-            } else if (event.data == YT.PlayerState.ENDED) {
-                // *** SMART SHUFFLE LOGIC ***
-                // When a song ends, if shuffle is ON, we hijack the process and jump randomly.
-                if (isShuffleOn) {
-                    playRandomVideo();
-                } 
-                // If shuffle is OFF, YouTube automatically goes to next video, so we do nothing.
-                
-            } else if (event.data == YT.PlayerState.UNSTARTED) {
-                 knownTitles = {}; 
-                 updateQueueList();
-            }
-        }
-
-        function updateTrackInfo() {
-            try {
-                const videoData = player.getVideoData();
-                const currentIndex = player.getPlaylistIndex();
-
-                if (videoData) {
-                    document.getElementById('track-title').innerText = videoData.title;
-                    document.getElementById('track-artist').innerText = videoData.author;
-                    
-                    const videoId = videoData.video_id;
-                    const imgUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                    const img = document.getElementById('current-thumb');
-                    const tester = new Image();
-                    tester.onload = function() { img.src = imgUrl; };
-                    tester.onerror = function() { img.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; };
-                    tester.src = imgUrl;
-
-                    knownTitles[currentIndex] = videoData.title;
-                    updateQueueList(); 
-                }
-            } catch(e) {}
-        }
-
-        function togglePlay() {
-            var state = player.getPlayerState();
-            (state == YT.PlayerState.PLAYING) ? player.pauseVideo() : player.playVideo();
-        }
-        
-        // Updated Next Video to respect Shuffle
-        function nextVideo() { 
-            if(isShuffleOn) {
-                playRandomVideo();
-            } else {
-                setLoading(true); 
-                player.nextVideo(); 
-            }
-        }
-        
-        function prevVideo() { setLoading(true); player.previousVideo(); }
-        function toggleVideoVisibility() { document.getElementById('visualizer').classList.toggle('show-video'); }
-
-        function loadFromInput() {
-            const url = document.getElementById('url-input').value;
-            const reg = /[?&]list=([^#\&\?]+)/;
-            const match = url.match(reg);
-            if (match && match[1]) {
-                setLoading(true);
-                currentPlaylistId = match[1];
-                knownTitles = {}; 
-                player.loadPlaylist({list:match[1], listType:'playlist'});
-            } else { alert("Invalid Playlist URL"); }
-        }
-
-        function loadFromLibrary() {
-            const id = document.getElementById('saved-library').value;
-            if (id) {
-                setLoading(true);
-                currentPlaylistId = id;
-                knownTitles = {}; 
-                player.loadPlaylist({list:id, listType:'playlist'});
-            }
-        }
-
-        function saveCurrentPlaylist() {
-            if (!currentPlaylistId) { alert("Play a playlist first!"); return; }
-            const name = prompt("Name this playlist:");
-            if (name) {
-                let lib = JSON.parse(localStorage.getItem('myMusicLibrary')) || [];
-                lib.push({ name: name, id: currentPlaylistId });
-                localStorage.setItem('myMusicLibrary', JSON.stringify(lib));
-                populateLibrary();
-            }
-        }
-
-        function populateLibrary() {
-            const lib = JSON.parse(localStorage.getItem('myMusicLibrary')) || [];
-            const select = document.getElementById('saved-library');
-            select.innerHTML = '<option value="" disabled selected>📂 Saved Playlists</option>';
-            lib.forEach(item => {
-                let opt = document.createElement("option");
-                opt.value = item.id;
-                opt.text = item.name;
-                select.appendChild(opt);
-            });
-        }
-
-        function clearLibrary() {
-            if(confirm("Delete all?")) { localStorage.removeItem('myMusicLibrary'); populateLibrary(); }
-        }
-
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    </script>
-</body>
-</html>
+                document.getElementById('queue-container').style.
