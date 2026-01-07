@@ -3,287 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Audio Player</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Vibe Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1db954; /* Spotify Green */
-            --primary-hover: #1ed760;
-            --bg-gradient: linear-gradient(135deg, #1e2a38, #000000);
-            --glass-bg: rgba(255, 255, 255, 0.05);
+            --bg-dark: #0f0f0f;
+            --glass-surface: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #ffffff;
-            --text-sub: #b3b3b3;
+            --primary-glow: linear-gradient(45deg, #ff0055, #00ddff, #00ff00, #ff0055);
         }
 
         body {
-            background: var(--bg-gradient);
-            color: var(--text-main);
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 100%);
+            color: white;
             font-family: 'Inter', sans-serif;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
-            /* Prevent scrolling on mobile if content fits */
-            overflow: hidden; 
-        }
-
-        /* The Main Card */
-        .player-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 90%;
-            max-width: 360px;
-            transition: transform 0.3s ease;
-        }
-
-        /* Input Group */
-        .input-group {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        input[type="text"] {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--glass-border);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        
-        input[type="text"]:focus {
-            border-color: var(--primary);
-        }
-
-        /* Generic Button Styles */
-        .btn {
-            border: none;
-            border-radius: 8px;
-            padding: 10px 15px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-play {
-            background-color: var(--primary);
-            color: black;
-        }
-        .btn-play:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
-
-        .btn-save {
-            background-color: transparent;
-            border: 1px solid var(--glass-border);
-            color: var(--text-sub);
-            width: 100%;
-            margin-bottom: 20px;
-            font-size: 12px;
-        }
-        .btn-save:hover {
-            border-color: var(--text-main);
-            color: var(--text-main);
-            background: rgba(255,255,255,0.05);
-        }
-
-        /* Dropdown */
-        select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 10px;
-            background-color: rgba(0,0,0,0.3);
-            color: var(--text-main);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            appearance: none; /* Removes default OS arrow */
-            /* Add custom arrow */
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b3b3b3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px top 50%;
-            background-size: 10px auto;
-        }
-
-        /* Video Container */
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
-            background: #000;
-        }
-        
-        /* Forces aspect ratio and overlays */
-        #player {
-            width: 100%;
-            height: 200px;
-            display: block;
-            /* Make the video unresponsive to clicks so users use our buttons */
-            pointer-events: none; 
-            opacity: 0.8; /* Slight dim for style */
         }
 
-        /* Controls */
+        /* The Glass Card */
+        .player-card {
+            background: var(--glass-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 30px;
+            width: 340px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Input Controls (Top) */
+        .top-controls {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input, select {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--glass-border);
+            color: #ddd;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box; /* Fix padding issues */
+        }
+        
+        .btn-small {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #aaa;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .btn-small:hover { background: rgba(255,255,255,0.2); color: white; }
+
+        /* THE VISUALIZER & ALBUM ART */
+        .visualizer-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 40px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* The Colorful Glow Behind */
+        .glow-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-glow);
+            background-size: 400%;
+            border-radius: 40px; /* Squircle shape */
+            filter: blur(20px);
+            opacity: 0.3;
+            transition: opacity 0.5s ease;
+            z-index: 1;
+        }
+
+        /* The Album Art Image */
+        .album-art {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 35px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-color: #000;
+        }
+
+        /* Animation States */
+        .is-playing .glow-ring {
+            opacity: 0.8;
+            animation: glowing 3s linear infinite;
+        }
+        
+        .is-playing .album-art {
+            transform: scale(1.05);
+            animation: thump 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes glowing {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes thump {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.03); }
+        }
+
+        /* Playback Controls */
         .controls {
             display: flex;
             justify-content: center;
-            gap: 25px;
+            gap: 30px;
             align-items: center;
         }
 
-        .ctrl-btn {
+        button.ctrl-btn {
             background: none;
             border: none;
-            color: var(--text-sub);
+            color: #888;
             font-size: 24px;
             cursor: pointer;
             transition: color 0.2s;
-            padding: 0;
         }
-        .ctrl-btn:hover { color: white; }
+        button.ctrl-btn:hover { color: white; }
 
-        .main-play-btn {
-            background-color: white;
+        .play-btn {
+            background: white;
             color: black;
-            border: none;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
+            font-size: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: none;
             cursor: pointer;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
             transition: transform 0.2s;
-            box-shadow: 0 4px 10px rgba(255,255,255,0.2);
         }
-        .main-play-btn:hover { transform: scale(1.05); }
+        .play-btn:hover { transform: scale(1.1); }
 
         .status-text {
-            margin-top: 20px;
-            font-size: 13px;
-            color: var(--primary);
+            margin-top: 25px;
+            font-size: 12px;
+            color: #666;
             font-weight: 600;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
-        .footer-links {
-            margin-top: 15px;
-            font-size: 11px;
-            color: var(--text-sub);
+        /* HIDE THE REAL PLAYER (But keep it technically there for audio) */
+        #player {
+            position: absolute;
+            top: -1000px;
+            left: -1000px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
         }
-        .footer-links a {
-            color: var(--text-sub);
-            text-decoration: none;
-            margin: 0 5px;
-            cursor: pointer;
-        }
-        .footer-links a:hover { text-decoration: underline; color: white; }
-
     </style>
 </head>
 <body>
 
     <div class="player-card">
         
-        <div class="input-group">
-            <input type="text" id="url-input" placeholder="Paste YouTube Playlist Link...">
-            <button class="btn btn-play" onclick="loadFromInput()">GO</button>
+        <div class="top-controls">
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="url-input" placeholder="Paste YouTube Playlist Link...">
+                <button class="btn-small" style="width: auto;" onclick="loadFromInput()">GO</button>
+            </div>
+            
+            <select id="saved-library" onchange="loadFromLibrary()">
+                <option value="" disabled selected>📂 Saved Playlists</option>
+            </select>
+
+            <button class="btn-small" onclick="saveCurrentPlaylist()">+ Save to Library</button>
         </div>
 
-        <select id="saved-library" onchange="loadFromLibrary()">
-            <option value="" disabled selected>📂 Select from Library</option>
-        </select>
-        
-        <button class="btn btn-save" onclick="saveCurrentPlaylist()">+ Save Current Playlist</button>
-
-        <div class="video-wrapper">
-            <div id="player"></div>
+        <div class="visualizer-container" id="visualizer">
+            <div class="glow-ring"></div>
+            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop" class="album-art" id="current-thumb">
         </div>
 
         <div class="controls">
-            <button class="ctrl-btn" onclick="prevVideo()" title="Previous">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            <button class="ctrl-btn" onclick="prevVideo()">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
             </button>
             
-            <button class="main-play-btn" onclick="togglePlay()" title="Play/Pause">
-                <div id="play-icon">&#9658;</div> </button>
+            <button class="play-btn" onclick="togglePlay()">
+                <div id="play-icon">&#9658;</div>
+            </button>
             
-            <button class="ctrl-btn" onclick="nextVideo()" title="Next">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            <button class="ctrl-btn" onclick="nextVideo()">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
             </button>
         </div>
-        
-        <div class="status-text" id="status-text">Ready</div>
 
-        <div class="footer-links">
-            <a onclick="clearLibrary()">Reset Library</a>
-        </div>
+        <div class="status-text" id="status-text">Ready</div>
+        <div style="margin-top:10px; font-size:10px; color:#444; cursor:pointer;" onclick="clearLibrary()">Reset All</div>
+
+        <div id="player"></div>
     </div>
 
     <script>
         var player;
         var currentPlaylistId = ""; 
-        
+
+        // --- 1. VISUALIZER LOGIC ---
+        function updateVisualizerState(isPlaying) {
+            const viz = document.getElementById('visualizer');
+            if (isPlaying) {
+                viz.classList.add('is-playing');
+            } else {
+                viz.classList.remove('is-playing');
+            }
+        }
+
+        function updateThumbnail() {
+            try {
+                // Get current video ID from the hidden player
+                const videoData = player.getVideoData();
+                const videoId = videoData.video_id;
+                
+                if (videoId) {
+                    // Construct high-res thumbnail URL
+                    const imgUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                    
+                    // Update the image source
+                    const img = document.getElementById('current-thumb');
+                    
+                    // Fallback if maxres doesn't exist (prevents broken images)
+                    const tester = new Image();
+                    tester.onload = function() { img.src = imgUrl; };
+                    tester.onerror = function() { img.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; };
+                    tester.src = imgUrl;
+                }
+            } catch(e) { console.log("Could not fetch thumb"); }
+        }
+
+        // --- 2. YOUTUBE API ---
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '200',
+                width: '200',
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 0, 
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+            populateLibrary();
+        }
+
+        function onPlayerStateChange(event) {
+            const status = document.getElementById('status-text');
+            const icon = document.getElementById('play-icon');
+            
+            if (event.data == YT.PlayerState.PLAYING) {
+                status.innerText = "Now Playing";
+                icon.innerHTML = "&#10074;&#10074;"; // Pause icon
+                updateVisualizerState(true);
+                updateThumbnail(); // Fetch new art
+            } else if (event.data == YT.PlayerState.PAUSED) {
+                status.innerText = "Paused";
+                icon.innerHTML = "&#9658;"; // Play icon
+                updateVisualizerState(false);
+            } else if (event.data == YT.PlayerState.BUFFERING) {
+                status.innerText = "Loading...";
+                updateVisualizerState(false);
+            } else if (event.data == YT.PlayerState.ENDED) {
+                updateVisualizerState(false);
+            }
+        }
+
+        // --- 3. STANDARD CONTROLS (Same as before) ---
+        function togglePlay() {
+            var state = player.getPlayerState();
+            (state == YT.PlayerState.PLAYING) ? player.pauseVideo() : player.playVideo();
+        }
+        function nextVideo() { player.nextVideo(); }
+        function prevVideo() { player.previousVideo(); }
+
+        // --- 4. LIBRARY & INPUTS (Same logic) ---
         function getPlaylistId(url) {
             let listId = null;
             try {
                 const reg = /[?&]list=([^#\&\?]+)/;
                 const match = url.match(reg);
-                if (match && match[1]) {
-                    listId = match[1];
-                }
-            } catch (e) { console.error(e); }
+                if (match && match[1]) listId = match[1];
+            } catch (e) {}
             return listId;
         }
 
         function loadFromInput() {
             const url = document.getElementById('url-input').value;
             const id = getPlaylistId(url);
-            
             if (id) {
                 currentPlaylistId = id;
-                loadPlayer(id);
-                document.getElementById('status-text').innerText = "Loading...";
-            } else {
-                alert("Invalid Link. Please use a valid YouTube Playlist URL.");
-            }
+                if(player && player.loadPlaylist) player.loadPlaylist({list:id, listType:'playlist'});
+            } else { alert("Invalid Playlist Link"); }
         }
 
         function loadFromLibrary() {
-            const select = document.getElementById('saved-library');
-            const id = select.value;
+            const id = document.getElementById('saved-library').value;
             if (id) {
                 currentPlaylistId = id;
-                document.getElementById('url-input').value = ""; 
-                loadPlayer(id);
+                if(player && player.loadPlaylist) player.loadPlaylist({list:id, listType:'playlist'});
             }
         }
 
         function saveCurrentPlaylist() {
-            if (!currentPlaylistId) {
-                alert("Please play a playlist first to save it.");
-                return;
-            }
-            
-            const name = prompt("Name this playlist:", "My Jams");
+            if (!currentPlaylistId) { alert("Play something first!"); return; }
+            const name = prompt("Playlist Name:");
             if (name) {
                 let library = JSON.parse(localStorage.getItem('myMusicLibrary')) || [];
                 library.push({ name: name, id: currentPlaylistId });
@@ -295,9 +353,7 @@
         function populateLibrary() {
             const library = JSON.parse(localStorage.getItem('myMusicLibrary')) || [];
             const select = document.getElementById('saved-library');
-            
-            select.innerHTML = '<option value="" disabled selected>📂 Select from Library</option>';
-            
+            select.innerHTML = '<option value="" disabled selected>📂 Saved Playlists</option>';
             library.forEach(item => {
                 let option = document.createElement("option");
                 option.value = item.id;
@@ -305,62 +361,10 @@
                 select.appendChild(option);
             });
         }
-
+        
         function clearLibrary() {
-            if(confirm("Are you sure you want to delete all saved playlists?")) {
-                localStorage.removeItem('myMusicLibrary');
-                populateLibrary();
-            }
+            if(confirm("Clear library?")) { localStorage.removeItem('myMusicLibrary'); populateLibrary(); }
         }
-
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '200',
-                width: '100%', 
-                playerVars: {
-                    'controls': 0, 
-                    'showinfo': 0, 
-                    'rel': 0, 
-                    'modestbranding': 1,
-                    'iv_load_policy': 3
-                },
-                events: {
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-            populateLibrary();
-        }
-
-        function loadPlayer(id) {
-            if (player && player.loadPlaylist) {
-                player.loadPlaylist({
-                    list: id,
-                    listType: 'playlist'
-                });
-            }
-        }
-
-        function onPlayerStateChange(event) {
-            const status = document.getElementById('status-text');
-            const icon = document.getElementById('play-icon');
-            
-            if (event.data == YT.PlayerState.PLAYING) {
-                status.innerText = "Now Playing";
-                icon.innerHTML = "&#10074;&#10074;"; // Pause Bars
-            } else if (event.data == YT.PlayerState.PAUSED) {
-                status.innerText = "Paused";
-                icon.innerHTML = "&#9658;"; // Play Triangle
-            } else if (event.data == YT.PlayerState.BUFFERING) {
-                status.innerText = "Buffering...";
-            }
-        }
-
-        function togglePlay() {
-            var state = player.getPlayerState();
-            (state == YT.PlayerState.PLAYING) ? player.pauseVideo() : player.playVideo();
-        }
-        function nextVideo() { player.nextVideo(); }
-        function prevVideo() { player.previousVideo(); }
 
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
