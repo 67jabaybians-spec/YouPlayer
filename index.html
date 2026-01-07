@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Playlist Player</title>
+    <style>
+        /* Spotify-like Dark Theme */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .player-container {
+            background-color: #181818;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            text-align: center;
+            width: 340px;
+        }
+
+        /* Input Section */
+        .input-group {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            background-color: #333;
+            border: 1px solid #333;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+            outline: none;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #1db954;
+        }
+
+        .action-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover { background-color: #444; }
+        .save-btn { background-color: #1db954; color: black; font-weight: bold; }
+        .save-btn:hover { background-color: #1ed760; }
+
+        /* Dropdown for Saved items */
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            background-color: #282828;
+            color: #b3b3b3;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #player {
+            width: 100%;
+            height: 200px; 
+            border-radius: 4px;
+            margin-bottom: 15px;
+            pointer-events: none; 
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        button.ctrl-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #b3b3b3;
+            font-size: 24px;
+        }
+        button.ctrl-btn:hover { color: white; }
+
+        .play-btn {
+            background-color: white;
+            color: black;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+        }
+        .play-btn:hover { transform: scale(1.05); }
+
+        .status {
+            font-size: 13px;
+            color: #1db954;
+            margin-top: 15px;
+            height: 20px;
+        }
+        
+        .remove-link {
+            font-size: 11px;
+            color: #b3b3b3;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 5px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        
+        <div class="input-group">
+            <input type="text" id="url-input" placeholder="Paste YouTube Playlist Link...">
+            <button class="action-btn" onclick="loadFromInput()">Play</button>
+        </div>
+
+        <select id="saved-library" onchange="loadFromLibrary()">
+            <option value="" disabled selected>📂 Your Saved Library</option>
+        </select>
+        
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <button class="action-btn save-btn" style="width:100%" onclick="saveCurrentPlaylist()">+ Save Current to Library</button>
+        </div>
+
+        <div id="player"></div>
+
+        <div class="controls">
+            <button class="ctrl-btn" onclick="prevVideo()">&#9664;&#9664;</button>
+            <button class="play-btn" onclick="togglePlay()">&#9658;</button>
+            <button class="ctrl-btn" onclick="nextVideo()">&#9654;&#9654;</button>
+        </div>
+        
+        <div class="status" id="status-text">Paste a link to start</div>
+        <a class="remove-link" onclick="clearLibrary()">[Clear All Saved Data]</a>
+    </div>
+
+    <script>
+        var player;
+        var currentPlaylistId = ""; 
+        
+        // 1. HELPER: Extract Playlist ID from URL
+        function getPlaylistId(url) {
+            let listId = null;
+            try {
+                // Regex to find 'list=' followed by characters
+                const reg = /[?&]list=([^#\&\?]+)/;
+                const match = url.match(reg);
+                if (match && match[1]) {
+                    listId = match[1];
+                }
+            } catch (e) { console.error(e); }
+            return listId;
+        }
+
+        // 2. Load Video from Input Box
+        function loadFromInput() {
+            const url = document.getElementById('url-input').value;
+            const id = getPlaylistId(url);
+            
+            if (id) {
+                currentPlaylistId = id;
+                loadPlayer(id);
+                document.getElementById('status-text').innerText = "Loading...";
+            } else {
+                alert("Invalid Playlist URL. Make sure it contains 'list='");
+            }
+        }
+
+        // 3. Load from Dropdown Library
+        function loadFromLibrary() {
+            const select = document.getElementById('saved-library');
+            const id = select.value;
+            if (id) {
+                currentPlaylistId = id;
+                document.getElementById('url-input').value = "Saved Playlist"; // Clear input
+                loadPlayer(id);
+            }
+        }
+
+        // 4. Save to Local Storage
+        function saveCurrentPlaylist() {
+            if (!currentPlaylistId) {
+                alert("Play a playlist first before saving!");
+                return;
+            }
+            
+            const name = prompt("Name this playlist:", "My Playlist");
+            if (name) {
+                let library = JSON.parse(localStorage.getItem('myMusicLibrary')) || [];
+                
+                // Add to array
+                library.push({ name: name, id: currentPlaylistId });
+                
+                // Save back to browser
+                localStorage.setItem('myMusicLibrary', JSON.stringify(library));
+                
+                // Refresh dropdown
+                populateLibrary();
+                alert("Saved!");
+            }
+        }
+
+        // 5. Populate Dropdown from Storage
+        function populateLibrary() {
+            const library = JSON.parse(localStorage.getItem('myMusicLibrary')) || [];
+            const select = document.getElementById('saved-library');
+            
+            // Keep the first default option
+            select.innerHTML = '<option value="" disabled selected>📂 Your Saved Library</option>';
+            
+            library.forEach(item => {
+                let option = document.createElement("option");
+                option.value = item.id;
+                option.text = item.name;
+                select.appendChild(option);
+            });
+        }
+
+        function clearLibrary() {
+            if(confirm("Delete all saved playlists?")) {
+                localStorage.removeItem('myMusicLibrary');
+                populateLibrary();
+            }
+        }
+
+        // --- YOUTUBE API ---
+        function onYouTubeIframeAPIReady() {
+            // Initialize empty player or default
+            player = new YT.Player('player', {
+                height: '200',
+                width: '340',
+                playerVars: {
+                    'controls': 0, 
+                    'showinfo': 0, 
+                    'rel': 0, 
+                    'modestbranding': 1 
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+            // Load saved list on startup
+            populateLibrary();
+        }
+
+        function loadPlayer(id) {
+            if (player && player.loadPlaylist) {
+                player.loadPlaylist({
+                    list: id,
+                    listType: 'playlist'
+                });
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            const status = document.getElementById('status-text');
+            const btn = document.querySelector('.play-btn');
+            
+            if (event.data == YT.PlayerState.PLAYING) {
+                status.innerText = "Playing...";
+                btn.innerHTML = "&#10074;&#10074;";
+            } else {
+                status.innerText = "Paused";
+                btn.innerHTML = "&#9658;";
+            }
+        }
+
+        function togglePlay() {
+            var state = player.getPlayerState();
+            (state == YT.PlayerState.PLAYING) ? player.pauseVideo() : player.playVideo();
+        }
+        function nextVideo() { player.nextVideo(); }
+        function prevVideo() { player.previousVideo(); }
+
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    </script>
+</body>
+</html>
