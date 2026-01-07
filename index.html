@@ -3,172 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Playlist Player</title>
+    <title>My Audio Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* Spotify-like Dark Theme */
+        :root {
+            --primary: #1db954; /* Spotify Green */
+            --primary-hover: #1ed760;
+            --bg-gradient: linear-gradient(135deg, #1e2a38, #000000);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-sub: #b3b3b3;
+        }
+
         body {
-            background-color: #121212;
-            color: white;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            /* Prevent scrolling on mobile if content fits */
+            overflow: hidden; 
         }
 
-        .player-container {
-            background-color: #181818;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        /* The Main Card */
+        .player-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
             text-align: center;
-            width: 340px;
+            width: 90%;
+            max-width: 360px;
+            transition: transform 0.3s ease;
         }
 
-        /* Input Section */
+        /* Input Group */
         .input-group {
             display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 20px;
         }
 
         input[type="text"] {
-            background-color: #333;
-            border: 1px solid #333;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
             color: white;
-            padding: 8px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 8px;
             width: 100%;
+            font-size: 14px;
             outline: none;
+            transition: border-color 0.2s;
         }
         
         input[type="text"]:focus {
-            border-color: #1db954;
+            border-color: var(--primary);
         }
 
-        .action-btn {
-            background-color: #333;
-            color: white;
+        /* Generic Button Styles */
+        .btn {
             border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .action-btn:hover { background-color: #444; }
-        .save-btn { background-color: #1db954; color: black; font-weight: bold; }
-        .save-btn:hover { background-color: #1ed760; }
+        .btn-play {
+            background-color: var(--primary);
+            color: black;
+        }
+        .btn-play:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
 
-        /* Dropdown for Saved items */
+        .btn-save {
+            background-color: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-sub);
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        .btn-save:hover {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Dropdown */
         select {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            background-color: #282828;
-            color: #b3b3b3;
-            border: none;
-            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: rgba(0,0,0,0.3);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 14px;
+            appearance: none; /* Removes default OS arrow */
+            /* Add custom arrow */
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b3b3b3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px top 50%;
+            background-size: 10px auto;
         }
 
+        /* Video Container */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            background: #000;
+        }
+        
+        /* Forces aspect ratio and overlays */
         #player {
             width: 100%;
-            height: 200px; 
-            border-radius: 4px;
-            margin-bottom: 15px;
+            height: 200px;
+            display: block;
+            /* Make the video unresponsive to clicks so users use our buttons */
             pointer-events: none; 
+            opacity: 0.8; /* Slight dim for style */
         }
 
+        /* Controls */
         .controls {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 25px;
             align-items: center;
-            margin-top: 15px;
         }
 
-        button.ctrl-btn {
+        .ctrl-btn {
             background: none;
             border: none;
-            cursor: pointer;
-            color: #b3b3b3;
+            color: var(--text-sub);
             font-size: 24px;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 0;
         }
-        button.ctrl-btn:hover { color: white; }
+        .ctrl-btn:hover { color: white; }
 
-        .play-btn {
+        .main-play-btn {
             background-color: white;
             color: black;
+            border: none;
             border-radius: 50%;
-            width: 55px;
-            height: 55px;
-            font-size: 22px;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            border: none;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(255,255,255,0.2);
         }
-        .play-btn:hover { transform: scale(1.05); }
+        .main-play-btn:hover { transform: scale(1.05); }
 
-        .status {
+        .status-text {
+            margin-top: 20px;
             font-size: 13px;
-            color: #1db954;
+            color: var(--primary);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .footer-links {
             margin-top: 15px;
-            height: 20px;
-        }
-        
-        .remove-link {
             font-size: 11px;
-            color: #b3b3b3;
-            text-decoration: underline;
-            cursor: pointer;
-            margin-top: 5px;
-            display: block;
+            color: var(--text-sub);
         }
+        .footer-links a {
+            color: var(--text-sub);
+            text-decoration: none;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .footer-links a:hover { text-decoration: underline; color: white; }
+
     </style>
 </head>
 <body>
 
-    <div class="player-container">
+    <div class="player-card">
         
         <div class="input-group">
             <input type="text" id="url-input" placeholder="Paste YouTube Playlist Link...">
-            <button class="action-btn" onclick="loadFromInput()">Play</button>
+            <button class="btn btn-play" onclick="loadFromInput()">GO</button>
         </div>
 
         <select id="saved-library" onchange="loadFromLibrary()">
-            <option value="" disabled selected>📂 Your Saved Library</option>
+            <option value="" disabled selected>📂 Select from Library</option>
         </select>
         
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <button class="action-btn save-btn" style="width:100%" onclick="saveCurrentPlaylist()">+ Save Current to Library</button>
-        </div>
+        <button class="btn btn-save" onclick="saveCurrentPlaylist()">+ Save Current Playlist</button>
 
-        <div id="player"></div>
+        <div class="video-wrapper">
+            <div id="player"></div>
+        </div>
 
         <div class="controls">
-            <button class="ctrl-btn" onclick="prevVideo()">&#9664;&#9664;</button>
-            <button class="play-btn" onclick="togglePlay()">&#9658;</button>
-            <button class="ctrl-btn" onclick="nextVideo()">&#9654;&#9654;</button>
+            <button class="ctrl-btn" onclick="prevVideo()" title="Previous">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            
+            <button class="main-play-btn" onclick="togglePlay()" title="Play/Pause">
+                <div id="play-icon">&#9658;</div> </button>
+            
+            <button class="ctrl-btn" onclick="nextVideo()" title="Next">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
         </div>
         
-        <div class="status" id="status-text">Paste a link to start</div>
-        <a class="remove-link" onclick="clearLibrary()">[Clear All Saved Data]</a>
+        <div class="status-text" id="status-text">Ready</div>
+
+        <div class="footer-links">
+            <a onclick="clearLibrary()">Reset Library</a>
+        </div>
     </div>
 
     <script>
         var player;
         var currentPlaylistId = ""; 
         
-        // 1. HELPER: Extract Playlist ID from URL
         function getPlaylistId(url) {
             let listId = null;
             try {
-                // Regex to find 'list=' followed by characters
                 const reg = /[?&]list=([^#\&\?]+)/;
                 const match = url.match(reg);
                 if (match && match[1]) {
@@ -178,7 +254,6 @@
             return listId;
         }
 
-        // 2. Load Video from Input Box
         function loadFromInput() {
             const url = document.getElementById('url-input').value;
             const id = getPlaylistId(url);
@@ -188,51 +263,40 @@
                 loadPlayer(id);
                 document.getElementById('status-text').innerText = "Loading...";
             } else {
-                alert("Invalid Playlist URL. Make sure it contains 'list='");
+                alert("Invalid Link. Please use a valid YouTube Playlist URL.");
             }
         }
 
-        // 3. Load from Dropdown Library
         function loadFromLibrary() {
             const select = document.getElementById('saved-library');
             const id = select.value;
             if (id) {
                 currentPlaylistId = id;
-                document.getElementById('url-input').value = "Saved Playlist"; // Clear input
+                document.getElementById('url-input').value = ""; 
                 loadPlayer(id);
             }
         }
 
-        // 4. Save to Local Storage
         function saveCurrentPlaylist() {
             if (!currentPlaylistId) {
-                alert("Play a playlist first before saving!");
+                alert("Please play a playlist first to save it.");
                 return;
             }
             
-            const name = prompt("Name this playlist:", "My Playlist");
+            const name = prompt("Name this playlist:", "My Jams");
             if (name) {
                 let library = JSON.parse(localStorage.getItem('myMusicLibrary')) || [];
-                
-                // Add to array
                 library.push({ name: name, id: currentPlaylistId });
-                
-                // Save back to browser
                 localStorage.setItem('myMusicLibrary', JSON.stringify(library));
-                
-                // Refresh dropdown
                 populateLibrary();
-                alert("Saved!");
             }
         }
 
-        // 5. Populate Dropdown from Storage
         function populateLibrary() {
             const library = JSON.parse(localStorage.getItem('myMusicLibrary')) || [];
             const select = document.getElementById('saved-library');
             
-            // Keep the first default option
-            select.innerHTML = '<option value="" disabled selected>📂 Your Saved Library</option>';
+            select.innerHTML = '<option value="" disabled selected>📂 Select from Library</option>';
             
             library.forEach(item => {
                 let option = document.createElement("option");
@@ -243,29 +307,27 @@
         }
 
         function clearLibrary() {
-            if(confirm("Delete all saved playlists?")) {
+            if(confirm("Are you sure you want to delete all saved playlists?")) {
                 localStorage.removeItem('myMusicLibrary');
                 populateLibrary();
             }
         }
 
-        // --- YOUTUBE API ---
         function onYouTubeIframeAPIReady() {
-            // Initialize empty player or default
             player = new YT.Player('player', {
                 height: '200',
-                width: '340',
+                width: '100%', 
                 playerVars: {
                     'controls': 0, 
                     'showinfo': 0, 
                     'rel': 0, 
-                    'modestbranding': 1 
+                    'modestbranding': 1,
+                    'iv_load_policy': 3
                 },
                 events: {
                     'onStateChange': onPlayerStateChange
                 }
             });
-            // Load saved list on startup
             populateLibrary();
         }
 
@@ -280,14 +342,16 @@
 
         function onPlayerStateChange(event) {
             const status = document.getElementById('status-text');
-            const btn = document.querySelector('.play-btn');
+            const icon = document.getElementById('play-icon');
             
             if (event.data == YT.PlayerState.PLAYING) {
-                status.innerText = "Playing...";
-                btn.innerHTML = "&#10074;&#10074;";
-            } else {
+                status.innerText = "Now Playing";
+                icon.innerHTML = "&#10074;&#10074;"; // Pause Bars
+            } else if (event.data == YT.PlayerState.PAUSED) {
                 status.innerText = "Paused";
-                btn.innerHTML = "&#9658;";
+                icon.innerHTML = "&#9658;"; // Play Triangle
+            } else if (event.data == YT.PlayerState.BUFFERING) {
+                status.innerText = "Buffering...";
             }
         }
 
